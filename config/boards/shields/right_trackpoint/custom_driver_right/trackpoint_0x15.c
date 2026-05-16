@@ -42,8 +42,8 @@ typedef enum { TP_MOUSE = 0, TP_SCROLL = 1, TP_ARROW = 2 } tp_mode_t;
 /* ========= 全局状态 ========= */
 static const struct device *trackpoint_dev_ref = NULL;
 uint32_t last_packet_time = 0;
-static bool tp_mo2_held = false;    /* pos 62 = mo(2) → ARROW */
-static bool tp_rctrl_held = false;  /* pos 63 = RCTRL → SCROLL */
+static bool tp_mo2_held = false;    /* 本地 kscan pos 33 = 全局 RC(4,9) = mo(2) */
+static bool tp_rctrl_held = false;  /* 本地 kscan pos 34 = 全局 RC(4,10) = RCTRL */
 static int tp_ax = 0;  /* ARROW 模式下的累加值 */
 static int tp_ay = 0;
 
@@ -54,20 +54,20 @@ static tp_mode_t tp_get_mode(void) {
     return TP_MOUSE;
 }
 
-/* ========= 按键监听: pos 62 (mo(2)) → ARROW, pos 63 (RCTRL) → SCROLL ========= */
-/* 右半为 BLE Peripheral，无法访问层状态，故用右手按键间接判断 */
+/* ========= 按键监听: 本地 kscan 位置与全局 keymap 位置不同 ========= */
+/* Peripheral kscan 为 7行×8列，本地位置 = row*8+col
+   全局 RC(4,9)=mo(2)   → 本地 col=1 → pos 4*8+1 = 33
+   全局 RC(4,10)=RCTRL → 本地 col=2 → pos 4*8+2 = 34 */
 static int tp_key_listener_cb(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
     if (!ev) return 0;
 
-    if (ev->position == 62) {
+    if (ev->position == 33) {
         tp_mo2_held = ev->state;
-        LOG_INF("mo(2) pos=62 %s → %s", tp_mo2_held ? "HELD" : "RELEASED",
-                tp_mo2_held ? "ARROW" : (tp_rctrl_held ? "SCROLL" : "MOUSE"));
-    } else if (ev->position == 63) {
+        LOG_INF("mo(2) local=33 %s", tp_mo2_held ? "HELD" : "RELEASED");
+    } else if (ev->position == 34) {
         tp_rctrl_held = ev->state;
-        LOG_INF("RCTRL pos=63 %s → %s", tp_rctrl_held ? "HELD" : "RELEASED",
-                tp_mo2_held ? "ARROW" : (tp_rctrl_held ? "SCROLL" : "MOUSE"));
+        LOG_INF("RCTRL local=34 %s", tp_rctrl_held ? "HELD" : "RELEASED");
     }
     return 0;
 }

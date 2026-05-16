@@ -150,21 +150,20 @@ static void arrow_repeat_work_handler(struct k_work *work) {
         dy_acc = 0;
         k_work_schedule(&data->arrow_repeat_work, K_MSEC(SCROLL_DELAY_MS));
     } else if (tb_mode == TB_ARROW) {
-        /* 方向键模式：累积超过阈值时通过 HID 隐式按键发送方向键 */
-        /* HID usage: RIGHT=0x4F, LEFT=0x50, DOWN=0x51, UP=0x52 */
+        /* 方向键模式：组合 usage = (KeyboardPage 0x07 << 16) | key_id */
+        /* RIGHT=0x4F LEFT=0x50 DOWN=0x51 UP=0x52 */
         while (abs(dx) >= ARROW_THRESHOLD) {
-            uint32_t usage = (dx > 0) ? 0x4F : 0x50;
+            uint32_t usage = 0x00070000 | ((dx > 0) ? 0x4F : 0x50);
             zmk_hid_press(usage);
             zmk_hid_release(usage);
             dx -= (dx > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
         }
         while (abs(dy) >= ARROW_THRESHOLD) {
-            uint32_t usage = (dy > 0) ? 0x52 : 0x51;
+            uint32_t usage = 0x00070000 | ((dy > 0) ? 0x52 : 0x51);
             zmk_hid_press(usage);
             zmk_hid_release(usage);
             dy -= (dy > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
         }
-        /* 保留未达阈值的余数，还原到累加器 */
         dx_acc = -dx;
         dy_acc = -dy;
         k_work_schedule(&data->arrow_repeat_work, K_MSEC(SCROLL_DELAY_MS));
