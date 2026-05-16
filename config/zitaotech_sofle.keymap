@@ -78,7 +78,7 @@
 &kp F1        &kp F2     &kp F3           &kp F4     &kp F5           &kp F6          &bt BT_CLR    &kp C_MUTE  &kp F7          &kp F8      &kp F9          &kp F10           &kp F11        &kp F12
 &trans           &mkp MCLK     &kp LC(LS(TAB))  &trans     &kp LC(TAB)      &kp LC(W)       &trans  &kp HOME    &kp UP_ARROW    &kp END     &kp PAGE_UP     &kp DEL
 &rgb_ug RGB_TOG  &mkp RCLK  &kp LS(LA(TAB))  &trans     &kp LA(TAB)      &trans    &mkp RCLK     &mkp RCLK   &trans  &kp LEFT    &kp DOWN_ARROW  &kp RIGHT_ARROW  &kp PAGE_DOWN  &trans
-&out OUT_TOG     &mkp LCLK  &trans   &trans   &trans  &trans  &trans        &trans      &bl BL_DEC      &bl BL_INC  &trans          &trans   &trans         &trans  &trans  &ktrans
+&out OUT_TOG     &mkp LCLK  &kp LS(DELETE)   &kp LC(INSERT)   &kp LS(INSERT)  &trans  &trans        &trans      &bl BL_DEC      &bl BL_INC  &trans          &trans   &trans         &trans  &trans  &trans
 &BOT             &trans     &trans           &trans     &trans           &trans          &trans        &trans      &trans          &trans
             >;
 
