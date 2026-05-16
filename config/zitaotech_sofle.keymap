@@ -90,10 +90,10 @@
         sym_layer {
             display-name = "Symbol";
             bindings = <
-&none  &kp N0  &kp N1  &kp N2  &kp N3  &kp X  &none      &none     &kp PERCENT     &kp AT_SIGN      &kp LEFT_BRACKET      &kp RIGHT_BRACKET      &kp POUND      &kp TILDE
-&none  &kp N4  &kp N5  &kp N6  &kp N7  &kp MINUS  &kp MINUS  &kp PLUS  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp CARET             &kp DOLLAR
-&none  &kp N8  &kp N9  &kp A            &kp B            &kp DOT  &none      &none     &kp UNDERSCORE  &kp EQUAL        &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp COLON      &kp AMPERSAND
-&none  &kp C            &kp D            &kp E            &kp F            &kp COMMA  &none      &none     &none           &none            &kp SLASH             &kp ASTERISK           &kp LESS_THAN  &kp GREATER_THAN  &kp EXCLAMATION  &kp PIPE
+&kp B  &kp N0  &kp N1  &kp N2  &kp N3  &kp U  &none      &none     &kp PERCENT     &kp AT_SIGN      &kp LEFT_BRACKET      &kp RIGHT_BRACKET      &kp POUND      &kp TILDE
+&kp X  &kp N4  &kp N5  &kp N6  &kp N7  &kp MINUS  &kp MINUS  &kp PLUS  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp CARET             &kp DOLLAR
+&kp L  &kp N8  &kp N9  &kp A            &kp B            &kp DOT  &none      &none     &kp UNDERSCORE  &kp EQUAL        &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp COLON      &kp AMPERSAND
+&kp F  &kp C            &kp D            &kp E            &kp F            &kp COMMA  &none      &none     &none           &none            &kp SLASH             &kp ASTERISK           &kp LESS_THAN  &kp GREATER_THAN  &kp EXCLAMATION  &kp PIPE
 &none  &none            &none            &none            &none            &none  &none      &none     &none           &BOT
             >;
 
