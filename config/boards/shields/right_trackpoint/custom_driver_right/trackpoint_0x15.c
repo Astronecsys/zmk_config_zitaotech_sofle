@@ -131,17 +131,17 @@ static void trackpoint_poll_work(struct k_work *work) {
                 /* 滚轮模式 */
                 int16_t scroll_x = 0, scroll_y = 0;
                 if (abs(dy) >= 128) {
-                    scroll_x = -dx / 24;
-                    scroll_y = -dy / 24;
+                    scroll_x = -dx / 30;
+                    scroll_y = -dy / 30;
                 } else if (abs(dy) >= 64) {
-                    scroll_x = -dx / 16;
-                    scroll_y = -dy / 16;
+                    scroll_x = -dx / 20;
+                    scroll_y = -dy / 20;
                 } else if (abs(dy) >= 32) {
-                    scroll_x = -dx / 12;
-                    scroll_y = -dy / 12;
+                    scroll_x = -dx / 15;
+                    scroll_y = -dy / 15;
                 } else if (abs(dy) >= 21) {
-                    scroll_x = -dx / 8;
-                    scroll_y = -dy / 8;
+                    scroll_x = -dx / 10;
+                    scroll_y = -dy / 10;
                 } else if (abs(dy) >= 3) {
                     scroll_x = (dx > 0) ? -1 : (dx < 0) ? 1 : 0;
                     scroll_y = (dy > 0) ? -1 : (dy < 0) ? 1 : 0;
