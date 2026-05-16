@@ -42,8 +42,8 @@ typedef enum { TP_MOUSE = 0, TP_SCROLL = 1, TP_ARROW = 2 } tp_mode_t;
 /* ========= 全局状态 ========= */
 static const struct device *trackpoint_dev_ref = NULL;
 uint32_t last_packet_time = 0;
-static bool tp_mo2_held = false;    /* kscan col2row: col*7+row, col=1 row=4 → pos 11 */
-static bool tp_rctrl_held = false;  /* kscan col2row: col*7+row, col=2 row=4 → pos 18 */
+static bool tp_mo2_held = false;    /* 全局 pos 62 = RC(4,9) = mo(2) */
+static bool tp_rctrl_held = false;  /* 全局 pos 63 = RC(4,10) = RCTRL */
 static int tp_ax = 0;
 static int tp_ay = 0;
 
@@ -54,17 +54,18 @@ static tp_mode_t tp_get_mode(void) {
     return TP_MOUSE;
 }
 
-/* ========= 按键监听: col2row 位置 = col*7+row ========= */
-/* mo(2):  RC(4,9)  → local col=1,row=4 → 1*7+4 = 11
-   RCTRL:  RC(4,10) → local col=2,row=4 → 2*7+4 = 18 */
+/* ========= 按键监听: 全局位置（矩阵变换在 Peripheral 侧也应用） ========= */
+/* mo(2)  = 全局 pos 62 = RC(4,9)
+   RCTRL = 全局 pos 63 = RC(4,10)
+   原版 pos 61 (ENTER) 已验证可用，故 62/63 同理 */
 static int tp_key_listener_cb(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
     if (!ev) return 0;
 
-    if (ev->position == 11) {
+    if (ev->position == 62) {
         tp_mo2_held = ev->state;
         LOG_INF("mo(2) %s", tp_mo2_held ? "HELD" : "RELEASED");
-    } else if (ev->position == 18) {
+    } else if (ev->position == 63) {
         tp_rctrl_held = ev->state;
         LOG_INF("RCTRL %s", tp_rctrl_held ? "HELD" : "RELEASED");
     }
