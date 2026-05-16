@@ -30,31 +30,50 @@ LOG_MODULE_REGISTER(trackpoint, LOG_LEVEL_DBG);
 #define MOTION_GPIO_PIN 14
 static const struct device *motion_gpio_dev;
 
+/* ========= 模式定义 ========= */
+typedef enum { TP_MOUSE = 0, TP_SCROLL = 1, TP_ARROW = 2 } tp_mode_t;
+
 /* ========= TrackPoint 常量 ========= */
 #define TRACKPOINT_I2C_ADDR 0x15
 #define TRACKPOINT_PACKET_LEN 7
 #define TRACKPOINT_MAGIC_BYTE0 0x50
+#define TP_ARROW_THRESHOLD 40
 
 /* ========= 全局状态 ========= */
 static const struct device *trackpoint_dev_ref = NULL;
-static bool space_pressed = false;
 uint32_t last_packet_time = 0;
+static bool tp_mo2_held = false;    /* pos 62 = mo(2) → ARROW */
+static bool tp_rctrl_held = false;  /* pos 63 = RCTRL → SCROLL */
+static int tp_ax = 0;  /* ARROW 模式下的累加值 */
+static int tp_ay = 0;
 
-/* ========= Space 按键监听 ========= */
-static int space_listener_cb(const zmk_event_t *eh) {
+/* ========= 当前模式（由按键状态推导） ========= */
+static tp_mode_t tp_get_mode(void) {
+    if (tp_mo2_held && tp_rctrl_held) return TP_ARROW;   /* mo(2)+RCTRL 双键 → ARROW */
+    if (tp_mo2_held) return TP_SCROLL;                    /* mo(2) 单独 → SCROLL */
+    return TP_MOUSE;
+}
+
+/* ========= 按键监听: pos 62 (mo(2)) → ARROW, pos 63 (RCTRL) → SCROLL ========= */
+/* 右半为 BLE Peripheral，无法访问层状态，故用右手按键间接判断 */
+static int tp_key_listener_cb(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
-    if (!ev) {
-        return 0;
-    }
+    if (!ev) return 0;
 
-    if (ev->position == 61) { // Space position code
-        space_pressed = ev->state;
-        LOG_INF("space position=61 %s", space_pressed ? "PRESSED" : "RELEASED");
+    if (ev->position == 62) {
+        tp_mo2_held = ev->state;
+        LOG_INF("mo(2) pos=62 %s → %s", tp_mo2_held ? "HELD" : "RELEASED",
+                tp_mo2_held ? "ARROW" : (tp_rctrl_held ? "SCROLL" : "MOUSE"));
+    } else if (ev->position == 63) {
+        tp_rctrl_held = ev->state;
+        LOG_INF("RCTRL pos=63 %s → %s", tp_rctrl_held ? "HELD" : "RELEASED",
+                tp_mo2_held ? "ARROW" : (tp_rctrl_held ? "SCROLL" : "MOUSE"));
     }
     return 0;
 }
-ZMK_LISTENER(trackpoint_space_listener, space_listener_cb);
-ZMK_SUBSCRIPTION(trackpoint_space_listener, zmk_position_state_changed);
+
+ZMK_LISTENER(trackpoint_key_listener, tp_key_listener_cb);
+ZMK_SUBSCRIPTION(trackpoint_key_listener, zmk_position_state_changed);
 
 /* ========= TrackPoint 配置结构 ========= */
 struct trackpoint_config {
@@ -100,8 +119,16 @@ static void trackpoint_poll_work(struct k_work *work) {
         /* INTPIN 拉低，读取数据包 */
         int8_t dx = 0, dy = 0;
         if (trackpoint_read_packet(dev, &dx, &dy) == 0) {
-            if (space_pressed) {
-                /* Space 按住时作为滚轮 */
+            if (tp_get_mode() == TP_MOUSE) {
+                /* 正常鼠标移动 */
+                uint8_t tp_led_brt = custom_led_get_last_valid_brightness();
+                float tp_factor = 0.4f + 0.01f * tp_led_brt;
+                dx = dx * 3 / 2 * tp_factor;
+                dy = dy * 3 / 2 * tp_factor;
+                input_report_rel(dev, INPUT_REL_X, -dx, false, K_FOREVER);
+                input_report_rel(dev, INPUT_REL_Y, -dy, true, K_FOREVER);
+            } else if (tp_get_mode() == TP_SCROLL) {
+                /* 滚轮模式 */
                 int16_t scroll_x = 0, scroll_y = 0;
                 if (abs(dy) >= 128) {
                     scroll_x = -dx / 24;
@@ -125,14 +152,23 @@ static void trackpoint_poll_work(struct k_work *work) {
                 input_report_rel(dev, INPUT_REL_HWHEEL, scroll_x, false, K_FOREVER);
                 input_report_rel(dev, INPUT_REL_WHEEL, -scroll_y, true, K_FOREVER);
                 k_sleep(K_MSEC(40));
-            } else {
-                /* 正常鼠标移动 */
-                uint8_t tp_led_brt = custom_led_get_last_valid_brightness();
-                float tp_factor = 0.4f + 0.01f * tp_led_brt;
-                dx = dx * 3 / 2 * tp_factor;
-                dy = dy * 3 / 2 * tp_factor;
-                input_report_rel(dev, INPUT_REL_X, -dx, false, K_FOREVER);
-                input_report_rel(dev, INPUT_REL_Y, -dy, true, K_FOREVER);
+            } else if (tp_get_mode() == TP_ARROW) {
+                /* 方向键模式：通过 HID 隐式按键发送 */
+                /* HID usage: RIGHT=0x4F, LEFT=0x50, DOWN=0x51, UP=0x52 */
+                tp_ax += dx;
+                tp_ay += dy;
+                while (abs(tp_ax) >= TP_ARROW_THRESHOLD) {
+                    uint32_t usage = (tp_ax > 0) ? 0x4F : 0x50;
+                    zmk_hid_key_press(usage);
+                    zmk_hid_key_release(usage);
+                    tp_ax -= (tp_ax > 0) ? TP_ARROW_THRESHOLD : -TP_ARROW_THRESHOLD;
+                }
+                while (abs(tp_ay) >= TP_ARROW_THRESHOLD) {
+                    uint32_t usage = (tp_ay > 0) ? 0x52 : 0x51;
+                    zmk_hid_key_press(usage);
+                    zmk_hid_key_release(usage);
+                    tp_ay -= (tp_ay > 0) ? TP_ARROW_THRESHOLD : -TP_ARROW_THRESHOLD;
+                }
             }
         }
         last_packet_time = now;

@@ -1,5 +1,5 @@
 /*
- * bbtrackball_input_handler.c - BB Trackball (GPIO interrupt + periodic report + arrow key mode)
+ * bbtrackball_input_handler.c - BB Trackball (GPIO interrupt + periodic report + layer-aware scroll)
  *
  * SPDX-License-Identifier: MIT
  */
@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <zmk/hid.h>
 #include <zmk/endpoints.h>
-#include <zmk/events/position_state_changed.h>
+#include <zmk/events/layer_state_changed.h>
+#include <zmk/event_manager.h>
+#include <zmk/keymap.h>
 
 LOG_MODULE_REGISTER(bbtrackball_input_handler, LOG_LEVEL_INF);
 
@@ -28,16 +30,20 @@ LOG_MODULE_REGISTER(bbtrackball_input_handler, LOG_LEVEL_INF);
 #define GPIO0_DEV DT_NODELABEL(gpio0)
 #define GPIO1_DEV DT_NODELABEL(gpio1)
 
+/* ==== 模式定义 ==== */
+typedef enum { TB_MOUSE = 0, TB_SCROLL = 1, TB_ARROW = 2 } tb_mode_t;
+
 /* ==== Config ==== */
 #define BASE_MOVE_PIXELS 6
 #define EXPONENTIAL_BASE 1.12f
 #define SPEED_SCALE 60.0f
 #define REPORT_INTERVAL_MS 10
 #define SCROLL_DELAY_MS 40
+#define ARROW_THRESHOLD 30
 
 /* ==== 状态 ==== */
 static bool moved = false;
-static bool space_pressed = false;
+static tb_mode_t tb_mode = TB_MOUSE;   /* 按活跃层自动切换 */
 static const struct device *trackball_dev_ref = NULL;
 static int dx_acc = 0;
 static int dy_acc = 0;
@@ -75,21 +81,19 @@ struct bbtrackball_data {
 /* ==== 外部接口 ==== */
 bool trackball_is_moving(void) { return moved; }
 
-/* ==== Space Listener ==== */
-static int space_listener_cb(const zmk_event_t *eh) {
-    const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
-    if (!ev)
-        return 0;
-
-    if (ev->position == 60) {
-        space_pressed = ev->state;
-        LOG_INF("Space %s", space_pressed ? "HELD" : "RELEASED");
-    }
+/* ==== 层状态监听: 按活跃层切换模式 ==== */
+/* Layer 0 = MOUSE, Layer 1 = ARROW, Layer 2 = SCROLL */
+static int layer_state_listener_cb(const zmk_event_t *eh) {
+    uint8_t layer = zmk_keymap_highest_layer_active();
+    static const tb_mode_t layer_map[] = {TB_MOUSE, TB_ARROW, TB_SCROLL};
+    tb_mode = (layer <= 2) ? layer_map[layer] : TB_MOUSE;
+    static const char *mode_names[] = {"MOUSE", "SCROLL", "ARROW"};
+    LOG_INF("Layer %d → %s", layer, mode_names[tb_mode]);
     return 0;
 }
 
-ZMK_LISTENER(space_listener, space_listener_cb);
-ZMK_SUBSCRIPTION(space_listener, zmk_position_state_changed);
+ZMK_LISTENER(bbtrackball_layer_listener, layer_state_listener_cb);
+ZMK_SUBSCRIPTION(bbtrackball_layer_listener, zmk_layer_state_changed);
 
 /* ==== GPIO 中断回调 ==== */
 static void dir_edge_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
@@ -119,10 +123,16 @@ static void dir_edge_cb(const struct device *dev, struct gpio_callback *cb, uint
     }
 }
 
-/* ==== Arrow key / Scroll repeat task ==== */
+/* ==== 方向键 / 滚轮 定时任务 ==== */
 static void arrow_repeat_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = CONTAINER_OF(work, struct k_work_delayable, work);
     struct bbtrackball_data *data = CONTAINER_OF(dwork, struct bbtrackball_data, arrow_repeat_work);
+
+    /* MOUSE 模式：鼠标移动由 report_work 处理，这里不做任何事 */
+    if (tb_mode == TB_MOUSE) {
+        k_work_schedule(&data->arrow_repeat_work, K_MSEC(10));
+        return;
+    }
 
     if (!dx_acc && !dy_acc) {
         k_work_schedule(&data->arrow_repeat_work, K_MSEC(SCROLL_DELAY_MS));
@@ -132,47 +142,51 @@ static void arrow_repeat_work_handler(struct k_work *work) {
     int dx = -dx_acc;
     int dy = -dy_acc;
 
-    /* === Space held → Scroll mode === */
-    if (space_pressed) {
-        int scroll_x = dx;
-        int scroll_y = dy;
-
-        input_report_rel(data->dev, INPUT_REL_HWHEEL, scroll_x, false, K_FOREVER);
-        input_report_rel(data->dev, INPUT_REL_WHEEL, -scroll_y, true, K_FOREVER);
-
+    if (tb_mode == TB_SCROLL) {
+        /* 滚轮模式 */
+        input_report_rel(data->dev, INPUT_REL_HWHEEL, dx, false, K_FOREVER);
+        input_report_rel(data->dev, INPUT_REL_WHEEL, -dy, true, K_FOREVER);
         dx_acc = 0;
         dy_acc = 0;
-
         k_work_schedule(&data->arrow_repeat_work, K_MSEC(SCROLL_DELAY_MS));
-        return;
+    } else if (tb_mode == TB_ARROW) {
+        /* 方向键模式：累积超过阈值时通过 HID 隐式按键发送方向键 */
+        /* HID usage: RIGHT=0x4F, LEFT=0x50, DOWN=0x51, UP=0x52 */
+        while (abs(dx) >= ARROW_THRESHOLD) {
+            uint32_t usage = (dx > 0) ? 0x4F : 0x50;
+            zmk_hid_key_press(usage);
+            zmk_hid_key_release(usage);
+            dx -= (dx > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
+        }
+        while (abs(dy) >= ARROW_THRESHOLD) {
+            uint32_t usage = (dy > 0) ? 0x52 : 0x51;
+            zmk_hid_key_press(usage);
+            zmk_hid_key_release(usage);
+            dy -= (dy > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
+        }
+        /* 保留未达阈值的余数，还原到累加器 */
+        dx_acc = -dx;
+        dy_acc = -dy;
+        k_work_schedule(&data->arrow_repeat_work, K_MSEC(SCROLL_DELAY_MS));
     }
-
-    dx_acc = 0;
-    dy_acc = 0;
-
-    k_work_schedule(&data->arrow_repeat_work, K_MSEC(10));
 }
 
-/* ==== HID 报告定时任务（Regular mouse movement） ==== */
+/* ==== HID 报告定时任务（MOUSE 模式下发送鼠标移动） ==== */
 static void report_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = CONTAINER_OF(work, struct k_work_delayable, work);
     struct bbtrackball_data *data = CONTAINER_OF(dwork, struct bbtrackball_data, report_work);
     const struct device *dev = data->dev;
     trackball_dev_ref = dev;
 
-    if (dx_acc || dy_acc) {
+    if (tb_mode == TB_MOUSE && (dx_acc || dy_acc)) {
         moved = true;
-
-        /* Space held → 禁止鼠标移动（只允许 scroll / arrow） */
-        if (!space_pressed) {
-            int dx = -dx_acc;
-            int dy = -dy_acc;
-            input_report_rel(dev, INPUT_REL_X, dx, false, K_FOREVER);
-            input_report_rel(dev, INPUT_REL_Y, dy, true, K_FOREVER);
-            dx_acc = 0;
-            dy_acc = 0;
-        }
-    } else {
+        int dx = -dx_acc;
+        int dy = -dy_acc;
+        input_report_rel(dev, INPUT_REL_X, dx, false, K_FOREVER);
+        input_report_rel(dev, INPUT_REL_Y, dy, true, K_FOREVER);
+        dx_acc = 0;
+        dy_acc = 0;
+    } else if (!dx_acc && !dy_acc) {
         moved = false;
     }
 
