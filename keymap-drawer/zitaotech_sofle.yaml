@@ -1,0 +1,139 @@
+layout: {zmk_keyboard: zitaotech_sofle}
+layers:
+  Nexys: ['`', '1', '2', '3', '4', '5', MUTE, MUTE, '6', '7', '8', '9', '0', BSPC, TAB, Q, W, E, R, T, Y, U, I, O, P, \, ESCAPE, A, S, D, F, G, '&mkp LCLK', '&mkp
+      LCLK', H, J, K, L, ;, '"', LSHFT, Z, X, C, V, B, PG DN, PG UP, '&mkp LCLK', '&mkp RCLK', N, M, ',', ., '?', '''', LEFT WIN, LALT, LEFT CONTROL, Neural, SPACE,
+    ENTER, Symbol, RIGHT CONTROL, RALT, RIGHT WIN]
+  Neural:
+  - '`'
+  - F1
+  - F2
+  - F3
+  - F4
+  - F5
+  - BT CLR
+  - MUTE
+  - F6
+  - F7
+  - F8
+  - F9
+  - F10
+  - DEL
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - Ctl+Sft+TAB
+  - {t: ▽, type: trans}
+  - Ctl+TAB
+  - Ctl+W
+  - {t: ▽, type: trans}
+  - HOME
+  - UP ARROW
+  - END
+  - PAGE UP
+  - {t: ▽, type: trans}
+  - RGB TOG
+  - '&mkp RCLK'
+  - Sft+Alt+TAB
+  - {t: ▽, type: trans}
+  - Ctl+TAB
+  - {t: ▽, type: trans}
+  - '&mkp RCLK'
+  - '&mkp RCLK'
+  - {t: ▽, type: trans}
+  - LEFT
+  - DOWN ARROW
+  - RIGHT ARROW
+  - PAGE DOWN
+  - {t: ▽, type: trans}
+  - OUT TOG
+  - '&mkp LCLK'
+  - {t: ▽, type: trans}
+  - '&mkp MCLK'
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - '&bl BL_DEC'
+  - '&bl BL_INC'
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - F11
+  - F12
+  - '&bootloader'
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {type: held}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - '&bootloader'
+  Symbol:
+  - ''
+  - KP 0
+  - KP 1
+  - KP 2
+  - KP 3
+  - ''
+  - ''
+  - ''
+  - '%'
+  - '@'
+  - '['
+  - ']'
+  - '#'
+  - '~'
+  - ''
+  - KP 4
+  - KP 5
+  - KP 6
+  - KP 7
+  - ''
+  - '-'
+  - +
+  - '{'
+  - '}'
+  - ^
+  - $
+  - ''
+  - KP 8
+  - KP 9
+  - A
+  - B
+  - ''
+  - ''
+  - ''
+  - _
+  - '='
+  - (
+  - )
+  - ':'
+  - '&'
+  - ''
+  - C
+  - D
+  - E
+  - F
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - /
+  - '*'
+  - <
+  - '>'
+  - '!'
+  - '|'
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - ''
+  - {type: held}
+  - ''
+  - ''
+  - '&bootloader'
