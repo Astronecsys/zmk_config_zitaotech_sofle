@@ -154,14 +154,14 @@ static void arrow_repeat_work_handler(struct k_work *work) {
         /* HID usage: RIGHT=0x4F, LEFT=0x50, DOWN=0x51, UP=0x52 */
         while (abs(dx) >= ARROW_THRESHOLD) {
             uint32_t usage = (dx > 0) ? 0x4F : 0x50;
-            zmk_hid_key_press(usage);
-            zmk_hid_key_release(usage);
+            zmk_hid_press(usage);
+            zmk_hid_release(usage);
             dx -= (dx > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
         }
         while (abs(dy) >= ARROW_THRESHOLD) {
             uint32_t usage = (dy > 0) ? 0x52 : 0x51;
-            zmk_hid_key_press(usage);
-            zmk_hid_key_release(usage);
+            zmk_hid_press(usage);
+            zmk_hid_release(usage);
             dy -= (dy > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
         }
         /* 保留未达阈值的余数，还原到累加器 */

@@ -159,14 +159,14 @@ static void trackpoint_poll_work(struct k_work *work) {
                 tp_ay += dy;
                 while (abs(tp_ax) >= TP_ARROW_THRESHOLD) {
                     uint32_t usage = (tp_ax > 0) ? 0x4F : 0x50;
-                    zmk_hid_key_press(usage);
-                    zmk_hid_key_release(usage);
+                    zmk_hid_press(usage);
+                    zmk_hid_release(usage);
                     tp_ax -= (tp_ax > 0) ? TP_ARROW_THRESHOLD : -TP_ARROW_THRESHOLD;
                 }
                 while (abs(tp_ay) >= TP_ARROW_THRESHOLD) {
                     uint32_t usage = (tp_ay > 0) ? 0x52 : 0x51;
-                    zmk_hid_key_press(usage);
-                    zmk_hid_key_release(usage);
+                    zmk_hid_press(usage);
+                    zmk_hid_release(usage);
                     tp_ay -= (tp_ay > 0) ? TP_ARROW_THRESHOLD : -TP_ARROW_THRESHOLD;
                 }
             }
