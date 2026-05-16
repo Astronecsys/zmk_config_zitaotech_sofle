@@ -153,20 +153,20 @@ static void trackpoint_poll_work(struct k_work *work) {
                 input_report_rel(dev, INPUT_REL_WHEEL, -scroll_y, true, K_FOREVER);
                 k_sleep(K_MSEC(40));
             } else if (tp_get_mode() == TP_ARROW) {
-                /* 方向键模式：通过 HID 隐式按键发送 */
-                /* HID usage: RIGHT=0x4F, LEFT=0x50, DOWN=0x51, UP=0x52 */
+                /* 方向键模式：Peripheral 无 hid.c，用 input_report_key 转发到 Central */
+                /* Linux input codes: UP=103, DOWN=108, LEFT=105, RIGHT=106 */
                 tp_ax += dx;
                 tp_ay += dy;
                 while (abs(tp_ax) >= TP_ARROW_THRESHOLD) {
-                    uint32_t usage = (tp_ax > 0) ? 0x4F : 0x50;
-                    zmk_hid_press(usage);
-                    zmk_hid_release(usage);
+                    int code = (tp_ax > 0) ? 106 : 105;
+                    input_report_key(dev, code, 1, true, K_FOREVER);
+                    input_report_key(dev, code, 0, true, K_FOREVER);
                     tp_ax -= (tp_ax > 0) ? TP_ARROW_THRESHOLD : -TP_ARROW_THRESHOLD;
                 }
                 while (abs(tp_ay) >= TP_ARROW_THRESHOLD) {
-                    uint32_t usage = (tp_ay > 0) ? 0x52 : 0x51;
-                    zmk_hid_press(usage);
-                    zmk_hid_release(usage);
+                    int code = (tp_ay > 0) ? 103 : 108;
+                    input_report_key(dev, code, 1, true, K_FOREVER);
+                    input_report_key(dev, code, 0, true, K_FOREVER);
                     tp_ay -= (tp_ay > 0) ? TP_ARROW_THRESHOLD : -TP_ARROW_THRESHOLD;
                 }
             }
