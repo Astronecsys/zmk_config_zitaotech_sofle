@@ -21,16 +21,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include "peripheral_status.h"
 
-// ==================== 动画帧声明 ====================
-LV_IMG_DECLARE(bunnygirl1);
-LV_IMG_DECLARE(bunnygirl3);
-LV_IMG_DECLARE(bunnygirl6);
-LV_IMG_DECLARE(bunnygirl9);
-LV_IMG_DECLARE(bunnygirl12);
-LV_IMG_DECLARE(bunnygirl15);
-LV_IMG_DECLARE(bunnygirl18);
-LV_IMG_DECLARE(bunnygirl21);
-
+LV_IMG_DECLARE(Sussurro);
 LV_IMG_DECLARE(landspace1);
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
@@ -39,26 +30,6 @@ static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 struct peripheral_status_state {
     bool connected;
 };
-
-// 动画状态
-struct art_state {
-    lv_obj_t *art;
-    lv_timer_t *timer;
-    uint8_t frame_index;
-};
-
-// 所有帧的引用数组
-/*static const lv_img_dsc_t *bunny_frames[] = {
-    &landspace1,
-};
-*/
-
-static const lv_img_dsc_t *bunny_frames[] = {
-    &bunnygirl1,  &bunnygirl3,  &bunnygirl6,  &bunnygirl9,
-    &bunnygirl12, &bunnygirl15, &bunnygirl18, &bunnygirl21,
-};
-
-#define BUNNY_FRAME_COUNT (sizeof(bunny_frames) / sizeof(bunny_frames[0]))
 
 // ================= 顶部绘制 =================
 static void draw_top(lv_obj_t *widget, lv_color_t cbuf[], const struct status_state *state) {
@@ -134,13 +105,6 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_peripheral_status, struct peripheral_status_s
                             output_status_update_cb, get_state)
 ZMK_SUBSCRIPTION(widget_peripheral_status, zmk_split_peripheral_status_changed);
 
-// ================= 22帧动画回调 =================
-static void art_anim_timer_cb(lv_timer_t *timer) {
-    struct art_state *state = timer->user_data;
-    state->frame_index = (state->frame_index + 1) % BUNNY_FRAME_COUNT;
-    lv_img_set_src(state->art, bunny_frames[state->frame_index]);
-}
-
 // ================= 初始化 =================
 int zmk_widget_status_init(struct zmk_widget_status *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
@@ -150,17 +114,9 @@ int zmk_widget_status_init(struct zmk_widget_status *widget, lv_obj_t *parent) {
     lv_obj_align(top, LV_ALIGN_BOTTOM_LEFT, 0, 0);
     lv_canvas_set_buffer(top, widget->cbuf, CANVAS_SIZE, CANVAS_SIZE, LV_IMG_CF_TRUE_COLOR);
 
-    // --- 动画状态 ---
-    static struct art_state astate;
-    astate.art = lv_img_create(widget->obj);
-    astate.frame_index = 0;
-    lv_img_set_src(astate.art, bunny_frames[0]);
-    lv_obj_align(astate.art, LV_ALIGN_TOP_LEFT, 20, 0);
-
-    // 每秒切换一帧
-    astate.timer = lv_timer_create(art_anim_timer_cb, 5000, &astate);
-
-    lv_obj_set_user_data(widget->obj, &astate);
+    lv_obj_t *art = lv_img_create(widget->obj);
+    lv_img_set_src(art, &Sussurro);
+    lv_obj_align(art, LV_ALIGN_TOP_LEFT, 20, 0);
 
     sys_slist_append(&widgets, &widget->node);
     widget_battery_status_init();
