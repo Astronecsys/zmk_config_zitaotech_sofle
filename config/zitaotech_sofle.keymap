@@ -76,9 +76,9 @@
             display-name = "Neural";
             bindings = <
 &kp GRAVE        &kp F1     &kp F2           &kp F3     &kp F4           &kp F5          &bt BT_CLR    &kp C_MUTE  &kp F6          &kp F7      &kp F8          &kp F9           &kp F10        &kp DEL
-&trans           &trans     &kp LC(LS(TAB))  &trans     &kp LC(TAB)      &kp LC(W)       &msc SCRL_UP  &kp HOME    &kp UP_ARROW    &kp END     &kp PAGE_UP     &trans
-&rgb_ug RGB_TOG  &mkp RCLK  &kp LS(LA(TAB))  &trans     &kp LC(TAB)      &msc SCRL_UP    &mkp RCLK     &mkp RCLK   &msc SCRL_DOWN  &kp LEFT    &kp DOWN_ARROW  &kp RIGHT_ARROW  &kp PAGE_DOWN  &trans
-&out OUT_TOG     &mkp LCLK  &msc SCRL_LEFT   &mkp MCLK  &msc SCRL_RIGHT  &msc SCRL_DOWN  &trans        &trans      &bl BL_DEC      &bl BL_INC  &trans          &msc SCRL_LEFT   &trans         &msc SCRL_RIGHT  &kp F11  &kp F12
+&trans           &trans     &kp LC(LS(TAB))  &trans     &kp LC(TAB)      &kp LC(W)       &trans  &kp HOME    &kp UP_ARROW    &kp END     &kp PAGE_UP     &trans
+&rgb_ug RGB_TOG  &mkp RCLK  &kp LS(LA(TAB))  &trans     &kp LC(TAB)      &trans    &mkp RCLK     &mkp RCLK   &trans  &kp LEFT    &kp DOWN_ARROW  &kp RIGHT_ARROW  &kp PAGE_DOWN  &trans
+&out OUT_TOG     &mkp LCLK  &trans   &mkp MCLK  &trans  &trans  &trans        &trans      &bl BL_DEC      &bl BL_INC  &trans          &trans   &trans         &trans  &kp F11  &kp F12
 &BOT             &trans     &trans           &trans     &trans           &trans          &trans        &trans      &trans          &BOT
             >;
 
@@ -94,7 +94,7 @@
 &none  &kp KP_NUMBER_4  &kp KP_NUMBER_5  &kp KP_NUMBER_6  &kp KP_NUMBER_7  &none  &kp MINUS  &kp PLUS  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp CARET             &kp DOLLAR
 &none  &kp KP_NUMBER_8  &kp KP_NUMBER_9  &kp A            &kp B            &none  &none      &none     &kp UNDERSCORE  &kp EQUAL        &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp COLON      &kp AMPERSAND
 &none  &kp C            &kp D            &kp E            &kp F            &none  &none      &none     &none           &none            &kp SLASH             &kp ASTERISK           &kp LESS_THAN  &kp GREATER_THAN  &kp EXCLAMATION  &kp PIPE
-&none  &none            &none            &none            &none            &none  &none      &none     &none           &none
+&none  &none            &none            &none            &none            &none  &none      &none     &none           &BOT
             >;
 
             sensor-bindings = <&BLE_encoder>, <&inc_dec_kp BACKSPACE DEL>;
