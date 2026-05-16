@@ -155,12 +155,14 @@ static void arrow_repeat_work_handler(struct k_work *work) {
         while (abs(dx) >= ARROW_THRESHOLD) {
             uint32_t usage = 0x00070000 | ((dx > 0) ? 0x4F : 0x50);
             zmk_hid_press(usage);
+            k_sleep(K_MSEC(2));  /* 确保 HID 报告在释放前发出 */
             zmk_hid_release(usage);
             dx -= (dx > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
         }
         while (abs(dy) >= ARROW_THRESHOLD) {
             uint32_t usage = 0x00070000 | ((dy > 0) ? 0x52 : 0x51);
             zmk_hid_press(usage);
+            k_sleep(K_MSEC(2));
             zmk_hid_release(usage);
             dy -= (dy > 0) ? ARROW_THRESHOLD : -ARROW_THRESHOLD;
         }
