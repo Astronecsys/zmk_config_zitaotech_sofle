@@ -95,58 +95,80 @@
     keymap {
         compatible = "zmk,keymap";
 
-         default_layer {
-            display-name = "QWERTY";
-           bindings = <
-&kp ESC   &kp N1   &kp N2     &kp N3   &kp N4    &kp N5    &kp C_MUTE                   &kp C_MUTE                     &kp N6      &kp N7      &kp N8    &kp N9    &kp N0   &kp BSPC            
-&kp TAB   &kp Q    &kp W      &kp E    &kp R     &kp T                                                                 &kp Y       &kp U       &kp I     &kp O     &kp P    &kp ENTER
-&kp CAPS  &kp A    &kp S      &kp D    &kp F     &kp G     &mkp LCLK                    &mkp LCLK                      &kp H       &kp J       &kp K     &kp L     &kp SEMI &kp BSLH
-&kp LSHFT &kp Z    &kp X      &kp C    &kp V     &kp B     &kp PG_DN  &kp PG_UP         &mt  LBRC LBKT  &mt RBRC RBKT  &kp N       &kp M       &kp COMMA &kp DOT   &kp FSLH &kp EQUAL
-                   &kp LCTRL  &kp LGUI &kp LALT  &kp SPACE &mo 1                                        &mo 1          &kp SPACE   &mo 2       &kp GRAVE    &kp MINUS
-           >;
-           sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp LEFT RIGHT>;
+        /* ===========================================================
+         * Layer 0: Nexys (默认层)
+         * 风格继承自原自定义版，保留 GRAVE/INSERT/ESCAPE 等位置
+         * =========================================================== */
+        default_layer {
+            display-name = "Nexys";
+            bindings = <
+&kp GRAVE   &kp N0    &kp N1    &kp N2   &kp N3   &kp N4    &kp C_MUTE                &kp INSERT                       &kp N5    &kp N6    &kp N7   &kp N8   &kp N9  &kp BSPC
+&kp TAB     &kp Q     &kp W     &kp E    &kp R    &kp T                                                               &kp Y     &kp U     &kp I    &kp O    &kp P   &kp BACKSLASH
+&kp ESCAPE  &kp A     &kp S     &kp D    &kp F    &kp G     &mkp LCLK                  &mkp LCLK                        &kp H     &kp J     &kp K    &kp L    &kp SEMI &kp DOUBLE_QUOTES
+&kp LSHFT   &kp Z     &kp X     &kp C    &kp V    &kp B     &kp PG_DN  &kp PG_UP       &mkp LCLK    &mkp RCLK          &kp N     &kp M     &kp COMMA &kp DOT  &kp QUESTION  &kp SINGLE_QUOTE
+                    &kp LEFT_WIN  &kp LALT  &kp LEFT_CONTROL  &mo 1   &kp SPACE  &kp ENTER                            &mo 2     &kp RIGHT_CONTROL  &kp RALT  &kp RIGHT_WIN
+            >;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp LEFT RIGHT>;
         };
 
-
-        lower_layer {
-            display-name = "LOWER";
+        /* ===========================================================
+         * Layer 1: Neural (功能层)
+         * F-键 + 窗口管理/桌面切换快捷键 + 鼠标操作 + RGB/背光
+         * =========================================================== */
+        func_layer {
+            display-name = "Neural";
             bindings = <
-&kp GRAVE   &kp F1    &kp F2     &kp F3    &kp F4    &kp F5           &bt BT_CLR                   &kp C_MUTE             &kp F6    &kp F7   &kp F9     &kp F10   &kp MINUS  &kp DEL            
-&kp TAB     &trans    &kp UP     &trans    &trans    &out OUT_TOG                                                         &kp F11   &kp N7   &kp N8     &kp N9    &kp HOME   &kp ENTER
-&kp CAPS    &kp LEFT  &kp DOWN   &kp RIGHT &trans    &trans           &mkp RCLK                    &mkp RCLK              &kp F12   &kp N4   &kp N5     &kp N6    &kp QMARK  &kp PIPE
-&kp LSHFT   &trans    &trans     &trans    &trans    &rgb_ug RGB_TOG  &trans     &trans            &bl BL_DEC  &bl BL_INC &trans    &kp N1   &kp N2     &kp N3    &kp UNDER  &kp PLUS
-                      &BOT       &kp LGUI  &kp LALT  &kp SPACE        &mo 1                                               &mo 1     &kp N0   &to 3      &kp DOT   &BOT 
+&kp F10       &kp F12     &kp F1          &kp F2       &kp F3           &kp F4          &bt BT_CLR    &kp C_MUTE    &kp F5        &kp F6      &kp F7          &kp F8           &kp F9        &kp F10
+&trans          &mkp MCLK  &kp LC(LG(LEFT))  &kp LA(LS(TAB))  &kp LC(LS(TAB))  &kp LC(LS(T))  &trans  &kp HOME      &kp UP_ARROW  &kp END     &kp PAGE_UP     &kp DEL
+&rgb_ug RGB_TOG &mkp RCLK  &kp LC(LG(RIGHT)) &kp LA(TAB)      &kp LC(TAB)      &trans         &mkp RCLK  &mkp RCLK  &trans        &kp LEFT    &kp DOWN_ARROW  &kp RIGHT_ARROW  &kp PAGE_DOWN  &trans
+&out OUT_TOG    &mkp LCLK  &kp LS(DELETE)  &kp LC(INSERT)  &kp LS(INSERT)  &kp LC(W)     &kp LC(LS(LA(DOUBLE_QUOTES)))  &kp LC(LS(LA(PERCENT)))  &bl BL_DEC  &bl BL_INC  &trans  &trans  &trans  &trans  &trans  &trans
+                    &trans  &trans          &trans          &trans          &trans          &trans      &trans          &trans      &trans
             >;
-            sensor-bindings = <&BLE_encoder &inc_dec_kp UP DOWN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp BACKSPACE DELETE>;
         };
-        raise_layer {
-            display-name = "RAISE";
+
+        /* ===========================================================
+         * Layer 2: Symbol (符号层)
+         * 特殊字符 + 数字小键盘
+         * =========================================================== */
+        sym_layer {
+            display-name = "Symbol";
             bindings = <
-&kp GRAVE   &kp F1    &kp F2     &kp F3    &kp F4    &kp F5           &bt BT_CLR                      &kp C_MUTE       &none      &none     &none     &kp UP    &none      &kp BSPC            
-&kp TAB     &trans    &kp UP     &trans    &trans    &out OUT_TOG                                                      &none      &none     &kp LEFT  &kp DOWN  &kp RIGHT  &none
-&kp CAPS    &kp LEFT  &kp DOWN   &kp RIGHT &trans    &trans           &mkp RCLK                       &none            &mkp LCLK  &mkp RCLK &none     &none     &none      &none
-&kp LSHFT   &trans    &trans     &trans    &trans    &rgb_ug RGB_TOG  &trans     &trans               &none  &none     &none      &none     &none     &none     &none      &none
-                      &none      &kp LGUI  &kp LALT  &kp SPACE        &mo 1                                  &mo 1     &mkp MB2   &none     &none     &none
+&kp B  &kp N0  &kp N1  &kp N2  &kp N3  &kp U  &none      &none     &kp PERCENT     &kp AT_SIGN      &kp LEFT_BRACKET      &kp RIGHT_BRACKET      &kp POUND      &kp TILDE
+&kp X  &kp N4  &kp N5  &kp N6  &kp N7  &kp MINUS  &kp MINUS  &kp PLUS  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp CARET             &kp DOLLAR
+&kp L  &kp N8  &kp N9  &kp A   &kp B   &kp DOT  &none      &none     &kp UNDERSCORE  &kp EQUAL        &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp COLON      &kp AMPERSAND
+&kp F  &kp C   &kp D   &kp E   &kp F   &kp COMMA  &none  &none  &none  &none  &kp SLASH  &kp ASTERISK  &kp LESS_THAN  &kp GREATER_THAN  &kp EXCLAMATION  &kp PIPE
+                   &none  &none  &none  &none  &none  &none  &none  &none  &trans
             >;
-        }; 
+            sensor-bindings = <&BLE_encoder &inc_dec_kp BACKSPACE DEL>;
+        };
+
+        /* ===========================================================
+         * Layer 3: MOUSE (鼠标层)
+         * 透过 to(0) 回到默认层, 保留上游设计
+         * =========================================================== */
         MOUSE_layer {
             display-name = "MOUSE";
             bindings = <
-&kp ESC   &kp N1    &kp N2     &kp N3   &kp N4   &kp N5     &bt BT_CLR                       &kp C_MUTE       &none      &none      &none   &none         &none  &kp BSPC            
-&kp TAB   &kp Q     &kp W      &kp E    &kp R    &kp T                                                        &none      &mkp MB3   &none   &none         &none  &none
-&kp CAPS  &kp A     &kp S      &kp D    &kp F    &kp G      &mkp LCLK                        &mkp LCLK        &none      &mkp LCLK  &none   &none         &none  &none
-&kp LSHFT &kp Z     &kp X      &kp C    &kp V    &kp B      &msc SCRL_DOWN   &msc SCRL_UP    &none  &none     &none      &mkp RCLK  &none   &msc SCRL_UP  &none  &none
-                    &kp LCTRL  &kp LALT &none    &kp SPACE  &to 0                                   &to 0     &kp SPACE  &to 0      &none   &msc SCRL_DOWN
+&kp GRAVE  &kp N0   &kp N1    &kp N2   &kp N3    &kp N4    &bt BT_CLR                      &kp C_MUTE       &none    &none    &none   &none         &none  &kp BSPC
+&kp TAB    &kp Q    &kp W     &kp E    &kp R     &kp T                                                             &none    &mkp MB3 &none   &none         &none  &none
+&kp ESCAPE &kp A    &kp S     &kp D    &kp F     &kp G     &mkp LCLK                       &mkp LCLK        &none    &mkp LCLK &none   &none         &none  &none
+&kp LSHFT  &kp Z    &kp X     &kp C    &kp V     &kp B     &msc SCRL_DOWN  &msc SCRL_UP   &none  &none     &none    &mkp RCLK &none   &msc SCRL_UP  &none  &none
+                      &kp LEFT_WIN  &kp LALT  &none      &kp SPACE  &to 0                             &to 0  &kp SPACE  &to 0    &none   &msc SCRL_DOWN
             >;
         };
-        RES_layer { 
+
+        /* ===========================================================
+         * Layer 4: RESERVE (保留层, 全空)
+         * =========================================================== */
+        RES_layer {
             display-name = "RESERVE";
             bindings = <
-&none     &none     &none      &none    &none    &none   &none                        &none            &none   &none  &none   &none  &none  &none            
-&none     &none     &none      &none    &none    &none                                                 &none   &none  &none   &none  &none  &none
-&none     &none     &none      &none    &none    &none   &none                        &none            &none   &none  &none   &none  &none  &none
-&none     &none     &none      &none    &none    &none   &none   &none                &none  &none     &none   &none  &none   &none  &none  &none
-                    &none      &none    &none    &none   &none                                         &none   &none  &none   &none  &none
+&none  &none  &none  &none  &none  &none  &none                    &none            &none  &none  &none  &none  &none  &none
+&none  &none  &none  &none  &none  &none                                                  &none  &none  &none  &none  &none  &none
+&none  &none  &none  &none  &none  &none  &none                    &none            &none  &none  &none  &none  &none  &none
+&none  &none  &none  &none  &none  &none  &none  &none            &none  &none     &none  &none  &none  &none  &none  &none
+                      &none  &none  &none  &none  &none                                      &none  &none  &none  &none  &none
             >;
         };
     };
